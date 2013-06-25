@@ -101,6 +101,30 @@ describe Superpay::Helper do
       Superpay::Helper.to_superpay_number('').must_equal 0
     end
 
+    it "deveria converter de superpay para decimal comum" do
+      Superpay::Helper.superpay_number_to_decimal(1).must_equal 0.01
+      Superpay::Helper.superpay_number_to_decimal('1').must_equal 0.01
+      Superpay::Helper.superpay_number_to_decimal(50).must_equal 0.5
+      Superpay::Helper.superpay_number_to_decimal('50').must_equal 0.5
+      Superpay::Helper.superpay_number_to_decimal(100).must_equal 1
+      Superpay::Helper.superpay_number_to_decimal('100').must_equal 1
+      Superpay::Helper.superpay_number_to_decimal(321).must_equal 3.21
+      Superpay::Helper.superpay_number_to_decimal('321').must_equal 3.21
+      Superpay::Helper.superpay_number_to_decimal(32145).must_equal 321.45
+      Superpay::Helper.superpay_number_to_decimal('32145').must_equal 321.45
+      Superpay::Helper.superpay_number_to_decimal(532145).must_equal 5321.45
+      Superpay::Helper.superpay_number_to_decimal('532145').must_equal 5321.45
+      Superpay::Helper.superpay_number_to_decimal(1532145).must_equal 15321.45
+      Superpay::Helper.superpay_number_to_decimal('1532145').must_equal 15321.45
+      Superpay::Helper.superpay_number_to_decimal(99532145).must_equal 995321.45
+      Superpay::Helper.superpay_number_to_decimal('99532145').must_equal 995321.45
+      Superpay::Helper.superpay_number_to_decimal(10099532145).must_equal 100995321.45
+      Superpay::Helper.superpay_number_to_decimal('10099532145').must_equal 100995321.45
+      Superpay::Helper.superpay_number_to_decimal(100995321450).must_equal 1009953214.5
+      Superpay::Helper.superpay_number_to_decimal('100995321450').must_equal 1009953214.5
+
+    end
+
   end
 
 end

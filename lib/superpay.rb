@@ -3,9 +3,10 @@ require "superpay/version"
 
 module Superpay
   
+  autoload :Conector, 'superpay/conector'
   autoload :Configuracao, 'superpay/configuracao'
-  autoload :Transacao, 'superpay/transacao'
   autoload :Helper, 'superpay/helper'
+  autoload :Transacao, 'superpay/transacao'
 
   #
   # Configura a conexão com o gateway.
@@ -20,6 +21,10 @@ module Superpay
   def self.config
     yield(Configuracao.instance) if block_given?
     return Configuracao.instance
+  end
+
+  def self.conector
+    Conector.instance
   end
 
 end

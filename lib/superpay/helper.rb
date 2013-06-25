@@ -12,6 +12,17 @@ module Superpay
       ('%.2f' % valor.to_f.abs).gsub('.', '').gsub(',', '').to_i
     end
 
+    #
+    # Transforma um número de retorno do gateway em um float.
+    # 100 -> 1.0
+    # 10  -> 0.1
+    # 500 -> 5.0
+    # 320 -> 3.2
+    # 241 -> 2.41
+    def self.superpay_number_to_decimal(number)
+      number.to_i.abs / 100.0
+    end
+
   end
 
 end
