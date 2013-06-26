@@ -19,8 +19,12 @@ module Superpay
     end
 
     def call(metodo, transacao)
+      parametros = {
+        usuario: Configuracao.instance.usuario, 
+        senha: Configuracao.instance.senha
+      }
       @savon_client.call(metodo.to_sym) do
-        message usuario: Configuracao.instance.usuario, senha: Configuracao.instance.senha, transacao: transacao
+        message parametros.merge(transacao)
       end
     end
 

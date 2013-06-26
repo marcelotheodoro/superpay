@@ -12,15 +12,21 @@ module Superpay
       6 => :boleto_em_compensacao,
       8 => :aguardando_pagamento,
       9 => :falha_na_operadora,
+      13 => :cancelada,
+      14 => :estornada,
       15 => :em_analise_risco,
       17 => :recusado_analise_risco,
       18 => :falha_envio_analise_risco,
       21 => :boleto_pago_menor,
       22 => :boleto_pago_maior,
-      30 => :operacao_em_andamento,
+      30 => :em_curso,
       31 => :ja_efetuada
     }
 
+    #
+    # Faz o pagamento da transação, a partir dos dados do gateway.
+    # Se a transação já foi feita, seu status de retorno será 31: ja_efetuada. 
+    # Caso deseje saber qual o real status da transação, faça uma consulta.
     def self.pagar(dados)
       # Valida os dados passados
       raise 'Campo obrigatório: numero_transacao' if dados[:numero_transacao].blank?
@@ -36,7 +42,7 @@ module Superpay
       # Sobrecarga com dados default
       dados[:codigo_estabelecimento] = ::Superpay.config.estabelecimento
 
-      retorno = Superpay.conector.call(:pagamento_transacao_completa, dados)
+      retorno = Superpay.conector.call(:pagamento_transacao_completa, {transacao: dados})
       resposta = retorno.to_array(:pagamento_transacao_completa_response, :return).first
       # Verifica se a resposta veio correta ou se deu problema
       return {erros: retorno} if !resposta
@@ -45,18 +51,28 @@ module Superpay
         raise "Código do estabelecimento não é o da configuração: #{resposta[:codigo_estabelecimento]}"
       end
 
-      # Sobrecarga com dados tratados
-      resposta[:status] = STATUS[resposta[:status_transacao].to_i]
-      resposta[:valor] = Helper.superpay_number_to_decimal(resposta[:valor])
-      resposta[:valor_desconto] = Helper.superpay_number_to_decimal(resposta[:valor_desconto]) unless resposta[:valor_desconto].blank?
-      resposta[:taxa_embarque] = Helper.superpay_number_to_decimal(resposta[:taxa_embarque]) unless resposta[:taxa_embarque].blank?
-      # resposta[:data] = resposta[:data].to_date
-
-      return resposta
+      # Sobrecarga com dados tratados e retorna
+      return Transacao.tratar_retorno(resposta)
     end
 
-    def self.consultar(dados)
-      raise 'Not implemented yet'
+    #
+    # Consulta uma transação de acordo com seu número (código).
+    def self.consultar(numero_transacao)
+      dados = {
+        codigo_estabelecimento: ::Superpay.config.estabelecimento,
+        numero_transacao: numero_transacao
+      }
+      retorno = Superpay.conector.call(:consulta_transacao_especifica, {consulta_transacao_w_s: dados})
+      resposta = retorno.to_array(:consulta_transacao_especifica_response, :return).first
+      # Verifica se a resposta veio correta ou se deu problema
+      return {erros: retorno} if !resposta
+      # Se o estabelecimento retornado for diferente da configuração, deu coisa errada
+      if resposta[:codigo_estabelecimento] != ::Superpay.config.estabelecimento.to_s
+        raise "Código do estabelecimento não é o da configuração: #{resposta[:codigo_estabelecimento]}"
+      end
+
+      # Sobrecarga com dados tratados e retorna
+      return Transacao.tratar_retorno(resposta)
     end
 
     def self.cancelar(dados)
@@ -65,6 +81,17 @@ module Superpay
 
     def self.pagar_com_varios_cartoes(dados)
       raise 'Not implemented yet'
+    end
+
+    #
+    # Trata o retorno das transações: converte valores e datas para objetos.
+    def self.tratar_retorno(transacao)
+      transacao[:status] = STATUS[transacao[:status_transacao].to_i]
+      transacao[:valor] = Helper.superpay_number_to_decimal(transacao[:valor])
+      transacao[:valor_desconto] = Helper.superpay_number_to_decimal(transacao[:valor_desconto]) unless transacao[:valor_desconto].blank?
+      transacao[:taxa_embarque] = Helper.superpay_number_to_decimal(transacao[:taxa_embarque]) unless transacao[:taxa_embarque].blank?
+      transacao[:data_aprovacao_operadora] = transacao[:data_aprovacao_operadora].to_date unless transacao[:data_aprovacao_operadora].blank?
+      return transacao
     end
 
   end

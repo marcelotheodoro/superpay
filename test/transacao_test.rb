@@ -104,7 +104,6 @@ describe Superpay::Transacao do
   end
 
   it "deveria pagar com sucesso" do
-
     transacao = Superpay::Transacao.pagar( @venda )
     transacao[:autorizacao].must_equal '0'
     transacao[:codigo_estabelecimento].must_equal Superpay.config.estabelecimento.to_s
@@ -118,6 +117,23 @@ describe Superpay::Transacao do
     transacao[:status].must_equal :ja_efetuada
     transacao[:taxa_embarque].must_equal 0
     transacao[:valor].must_equal 1
+    transacao[:valor_desconto].must_equal 0
+  end
+
+  it "deveria consultar com sucesso" do
+    transacao = Superpay::Transacao.consultar(104)
+    transacao[:autorizacao].must_equal '0'
+    transacao[:codigo_estabelecimento].must_equal Superpay.config.estabelecimento.to_s
+    transacao[:codigo_forma_pagamento].must_equal '120'
+    transacao[:codigo_transacao_operadora].must_equal '0'
+    # transacao[:data_aprovacao_operadora].must_equal '21/06/2013'
+    # transacao[:mensagem_venda].must_equal 'Autorizada'
+    transacao[:numero_transacao].must_equal '104'
+    transacao[:parcelas].must_equal '1'
+    transacao[:status_transacao].must_equal '13'
+    transacao[:status].must_equal :cancelada
+    transacao[:valor].must_equal 1
+    transacao[:taxa_embarque].must_equal 0
     transacao[:valor_desconto].must_equal 0
   end
 
