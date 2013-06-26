@@ -1,4 +1,6 @@
 # -*- encoding : utf-8 -*-
+require 'brdata'
+
 module Superpay
   class Transacao
 
@@ -42,8 +44,12 @@ module Superpay
       # Sobrecarga com dados default
       dados[:codigo_estabelecimento] = ::Superpay.config.estabelecimento
 
+      # Tratamento dos valores de envio
+      dados = Transacao.tratar_envio(dados)
+
       retorno = Superpay.conector.call(:pagamento_transacao_completa, {transacao: dados})
       resposta = retorno.to_array(:pagamento_transacao_completa_response, :return).first
+
       # Verifica se a resposta veio correta ou se deu problema
       return {erros: retorno} if !resposta
       # Se o estabelecimento retornado for diferente da configuração, deu coisa errada
@@ -86,11 +92,36 @@ module Superpay
     #
     # Trata o retorno das transações: converte valores e datas para objetos.
     def self.tratar_retorno(transacao)
-      transacao[:status] = STATUS[transacao[:status_transacao].to_i]
-      transacao[:valor] = Helper.superpay_number_to_decimal(transacao[:valor])
+      transacao[:status] = STATUS[transacao[:status_transacao].to_i] unless transacao[:status_transacao].blank?
+      transacao[:valor] = Helper.superpay_number_to_decimal(transacao[:valor]) unless transacao[:valor].blank?
       transacao[:valor_desconto] = Helper.superpay_number_to_decimal(transacao[:valor_desconto]) unless transacao[:valor_desconto].blank?
       transacao[:taxa_embarque] = Helper.superpay_number_to_decimal(transacao[:taxa_embarque]) unless transacao[:taxa_embarque].blank?
       transacao[:data_aprovacao_operadora] = transacao[:data_aprovacao_operadora].to_date unless transacao[:data_aprovacao_operadora].blank?
+      return transacao
+    end
+
+    #
+    # Trata os dados de envio da transação.
+    # Transforma valores e datas
+    def self.tratar_envio(transacao)
+      # valores da transação
+      transacao[:valor] = Helper.to_superpay_number(transacao[:valor]) unless transacao[:valor].blank?
+      transacao[:valor_desconto] = Helper.to_superpay_number(transacao[:valor_desconto]) unless transacao[:valor_desconto].blank?
+      transacao[:taxa_embarque] = Helper.to_superpay_number(transacao[:taxa_embarque]) unless transacao[:taxa_embarque].blank?
+
+      # valor dos itens do pedido
+      if transacao[:itens_do_pedido].is_a?(Hash)
+        transacao[:itens_do_pedido] = [transacao[:itens_do_pedido]]
+      end
+      transacao[:itens_do_pedido].each do |item|
+        item[:valor_unitario_produto] = Helper.to_superpay_number(item[:valor_unitario_produto]) unless item[:valor_unitario_produto].blank?
+      end
+
+      # dados do usuário
+      transacao[:dados_usuario_transacao][:cep_endereco_comprador] = Helper.cep_to_superpay(transacao[:dados_usuario_transacao][:cep_endereco_comprador]) unless transacao[:dados_usuario_transacao][:cep_endereco_comprador].blank?
+      transacao[:dados_usuario_transacao][:cep_endereco_entrega] = Helper.cep_to_superpay(transacao[:dados_usuario_transacao][:cep_endereco_entrega]) unless transacao[:dados_usuario_transacao][:cep_endereco_entrega].blank?
+      transacao[:dados_usuario_transacao][:data_nascimento_comprador] = transacao[:dados_usuario_transacao][:data_nascimento_comprador].to_date.strftime('%d/%m/%Y') unless transacao[:dados_usuario_transacao][:data_nascimento_comprador].blank?
+
       return transacao
     end
 

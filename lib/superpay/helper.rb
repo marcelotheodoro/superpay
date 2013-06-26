@@ -23,6 +23,10 @@ module Superpay
       number.to_i.abs / 100.0
     end
 
+    def self.cep_to_superpay(cep)
+      cep.gsub('.', '').gsub('-', '')
+    end
+
   end
 
 end
