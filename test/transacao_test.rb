@@ -1,6 +1,5 @@
 # -*- encoding : utf-8 -*-
 require 'minitest/autorun'
-require 'savon'
 require 'superpay'
 
 describe Superpay::Transacao do
@@ -139,6 +138,7 @@ describe Superpay::Transacao do
 
   it "deveria voltar erro se consultar transacao que não existe" do
     transacao = Superpay::Transacao.consultar(0)
+    puts transacao.to_yaml
   end
 
   it "deveria pagar pela primeira vez com sucesso" do

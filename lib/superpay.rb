@@ -1,5 +1,6 @@
 # -*- encoding : utf-8 -*-
 require "superpay/version"
+require 'savon'
 
 module Superpay
   
