@@ -11,8 +11,7 @@ module Superpay
 
     def url
       if ambiente_producao?
-        # TO-DO: Falta configurar a URL real
-        return 'http://homologacao2.superpay.com.br/checkout/servicosPagamentoCompletoWS.Services?wsdl'
+        return 'https://superpay2.superpay.com.br/checkout/servicosPagamentoCompletoWS.Services?wsdl'
       else
         return 'http://homologacao2.superpay.com.br/checkout/servicosPagamentoCompletoWS.Services?wsdl'
       end
