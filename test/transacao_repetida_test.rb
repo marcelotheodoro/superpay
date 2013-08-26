@@ -8,8 +8,8 @@
 #     Superpay.config do |config|
 #       config.ambiente         = :teste
 #       config.estabelecimento  = 1369338339932
-#       config.usuario          = 'ERNET'
-#       config.senha            = 'ERNET'
+#       config.usuario          = 'QW3'
+#       config.senha            = 'QW3'
 #     end
 
 #     # Cliente

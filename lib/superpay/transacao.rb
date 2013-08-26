@@ -47,11 +47,14 @@ module Superpay
       # Tratamento dos valores de envio
       dados = Transacao.tratar_envio(dados)
 
-      retorno = Superpay.conector.call(:pagamento_transacao_completa, {transacao: dados})
-      resposta = retorno.to_array(:pagamento_transacao_completa_response, :return).first
-
       # Verifica se a resposta veio correta ou se deu problema
-      return {erros: retorno} if !resposta
+      begin
+        retorno = Superpay.conector.call(:pagamento_transacao_completa, {transacao: dados})
+        resposta = retorno.to_array(:pagamento_transacao_completa_response, :return).first
+      rescue Savon::SOAPFault => error
+        return {error: error.to_hash[:fault][:faultstring]}
+      end
+      
       # Se o estabelecimento retornado for diferente da configuração, deu coisa errada
       if resposta[:codigo_estabelecimento] != ::Superpay.config.estabelecimento.to_s
         raise "Código do estabelecimento não é o da configuração: #{resposta[:codigo_estabelecimento]}"
