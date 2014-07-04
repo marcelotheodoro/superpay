@@ -13,7 +13,7 @@ module Superpay
       if ambiente_producao?
         return 'https://superpay2.superpay.com.br/checkout/servicosPagamentoCompletoWS.Services?wsdl'
       else
-        return 'http://homologacao2.superpay.com.br/checkout/servicosPagamentoCompletoWS.Services?wsdl'
+        return 'https://homologacao.superpay.com.br/superpay/servicosPagamentoCompletoWS.Services?wsdl'
       end
     end
 
